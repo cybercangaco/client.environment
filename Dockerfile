@@ -2,7 +2,6 @@ FROM library/alpine:3.7
 LABEL maintainer="Gerardo Junior <me@gerardo-junior.com>"
 
 ARG NODE_VERSION=8.11.1
-ARG YARN_VERSION=1.5.1
 
 ENV COMPILE_DEPS .build-deps \
                  binutils-gold \
