@@ -2,10 +2,12 @@ FROM library/alpine:3.7
 LABEL maintainer="Gerardo Junior <me@gerardo-junior.com>"
 
 ARG NODE_VERSION=8.11.1
+ARG NODE_SOURCE_URL=https://nodejs.org/dist
+
+ARG NPM_VERSION=6.4.1
 
 ENV COMPILE_DEPS .build-deps \
                  binutils-gold \
-                 curl \
                  g++ \
                  gcc \
                  gnupg \
@@ -24,21 +26,9 @@ RUN apk --update add --virtual .persistent-deps \
                                sudo \
                                libstdc++
 
-RUN cd /tmp
-
-# Create project directory
-RUN mkdir -p /usr/share/src
-
-# Create user node
-RUN set -xe && \
-    addgroup -g 1000 node && \
-    adduser -u 1000 -G node -s /bin/sh -D node && \
-    echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/default && \
-    chown -Rf node /usr/share/src
-
 # Compile and install node
-ENV NODE_SOURCE_URL https://nodejs.org/dist
-RUN for key in \
+RUN cd /tmp && \
+    for key in \
         94AE36675C464D64BAFA68DD7434390BDBE9B9C5 \
         FD3A5288F042B6850C66B31F09FE44734EB7990E \
         71DCFD284A79C3B38668286BC97EC7A07EDE3FC1 \
@@ -51,35 +41,47 @@ RUN for key in \
         gpg --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$key" || \
         gpg --keyserver hkp://ipv4.pool.sks-keyservers.net --recv-keys "$key" || \
         gpg --keyserver hkp://pgp.mit.edu:80 --recv-keys "$key" ; \
-    done && \
-    curl -SLO "${NODE_SOURCE_URL}/v${NODE_VERSION}/node-v${NODE_VERSION}.tar.xz" && \
-    curl -SLO --compressed "${NODE_SOURCE_URL}/v${NODE_VERSION}/SHASUMS256.txt.asc" && \
+    done && \    
+    wget ${NODE_SOURCE_URL}/v${NODE_VERSION}/node-v${NODE_VERSION}.tar.xz && \
+    wget ${NODE_SOURCE_URL}/v${NODE_VERSION}/SHASUMS256.txt.asc && \
     gpg --batch --decrypt --output SHASUMS256.txt SHASUMS256.txt.asc && \
     grep " node-v${NODE_VERSION}.tar.xz\$" SHASUMS256.txt | sha256sum -c - && \
     tar -Jxf "node-v${NODE_VERSION}.tar.xz" && \
     cd "node-v${NODE_VERSION}" && \
     sh ./configure && \
     make -j$(getconf _NPROCESSORS_ONLN) && \
-    make install && \
-    cd .. && \
-    npm i npm@latest -g && \
-    unset NODE_SOURCE_URL
+    make install
+
+# Setting npm version
+RUN npm i -g npm@${NPM_VERSION}
 
 # Cleanup system
 RUN apk del ${COMPILE_DEPS} && \
     rm -Rf /var/cache/apk/* /tmp/* $HOME/* && \
-    unset NODE_VERSION
-
-# Variables of nuxt configure
-ENV HOST 0.0.0.0
+    unset NODE_VERSION \
+          NODE_SOURCE_URL \
+          NPM_VERSION
 
 # Copy scripts
 COPY ./tools/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # Set project directory
+RUN mkdir -p /usr/share/src
 VOLUME ["/usr/share/src"]
 WORKDIR /usr/share/src
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
+# Create user node
+RUN set -xe && \
+    addgroup -g 1000 node && \
+    adduser -u 1000 -G node -s /bin/sh -D node && \
+    echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/default && \
+    chown -Rf node /usr/share/src
 USER node
-EXPOSE 3000
+
+# Variables of nuxt configure
+ENV HOST 0.0.0.0
+
+# Set expose ports
+EXPOSE 3000 9229

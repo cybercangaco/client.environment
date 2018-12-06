@@ -8,8 +8,10 @@ Docker image to run [nuxt.js](nuxtjs.org) projects
 ## Tags available
 
 - stable
+  - [alpine](https://hub.docker.com/_/alpine/) 3.7
   - [node](https://nodejs.org/) 8.11.1 (carbon)
 - latest
+  - [alpine](https://hub.docker.com/_/alpine/) 3.7
   - [node](https://nodejs.org/) 8.11.1 (carbon)
 
 ## Come on, do your tests
@@ -35,10 +37,10 @@ docker build . --tag cybercangaco/client.environment
 
 ```bash
 # in your project folder
-docker run -it --rm -v $(pwd):/usr/share/src -p 3000:3000 cybercangaco/client.environment:stable [command]
+docker run -it --rm -v $(pwd):/usr/share/src -p 3000:3000 cybercangaco/client.environment:stable [command or npm script]
 
 # or docker-compose
-docker-compose run nuxt [command]
+docker-compose run nuxt [command or npm script]
 ```
 ##### With [docker-compose](https://docs.docker.com/compose/)
 
@@ -56,6 +58,7 @@ Create the docker-compose.yml file  in your project folder with:
         target: /usr/share/src
     ports:
       - 3000:3000
+      # - 9229:9229 # node debug port
     #command: dev
 
 # (...)
@@ -64,9 +67,9 @@ Create the docker-compose.yml file  in your project folder with:
 ## How to enter image shell
  
 ```bash
-docker run -it --rm cybercangaco/client.environment /bin/sh
+docker run -it --rm cybercangaco/client.environment sh
 # or with docker-compose
-docker-compose run nuxt /bin/sh
+docker-compose run nuxt sh
 ```
 
 ### License  
