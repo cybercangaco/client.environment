@@ -9,10 +9,8 @@ Docker image to run [nuxt.js](nuxtjs.org) projects
 
 - stable
   - [node](https://nodejs.org/) 8.11.1 (carbon)
-  - [yarn](https://yarnpkg.com/) 1.5.1
 - latest
   - [node](https://nodejs.org/) 8.11.1 (carbon)
-  - [yarn](https://yarnpkg.com/) 1.5.1
 
 ## Come on, do your tests
 
