@@ -53,7 +53,7 @@ RUN set -xe && \
     make -j$(getconf _NPROCESSORS_ONLN) && \
     make install
 
-# Setting npm version
+# Set npm version
 RUN npm i -g npm@${NPM_VERSION}
 
 # Cleanup system
@@ -63,7 +63,7 @@ RUN apk del ${COMPILE_DEPS} && \
           NODE_SOURCE_URL \
           NPM_VERSION
 
-# Copy scripts
+# Copy script
 COPY ./tools/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
@@ -74,8 +74,7 @@ VOLUME ["/usr/share/src"]
 WORKDIR /usr/share/src
 
 # Create user node
-RUN set -xe && \
-    addgroup -g 1000 node && \
+RUN addgroup -g 1000 node && \
     adduser -u 1000 -G node -s /bin/sh -D node && \
     echo "node ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/default && \
     chown -Rf node /usr/share/src
@@ -83,6 +82,7 @@ USER node
 
 # Variables of nuxt configure
 ENV HOST 0.0.0.0
+ENV NUXT_PORT 3000
 
 # Set expose ports
-EXPOSE 3000 9229
+EXPOSE ${NUXT_PORT} 9229
